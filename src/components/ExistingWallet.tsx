@@ -27,14 +27,18 @@ const ExistingWallet = () => {
 
   useEffect(() => {
     // Fetch all wallets
-    axios.get<WalletData[]>("http://localhost:3000/wallets").then((res) => {
-      setWallets(res.data);
-    });
+    axios
+      .get<WalletData[]>("https://wallet-service-f3wa.onrender.com/wallets")
+      .then((res) => {
+        setWallets(res.data);
+      });
 
     const walletId = localStorage.getItem("walletId");
     if (walletId) {
       axios
-        .get<WalletData>(`http://localhost:3000/wallet/${walletId}`)
+        .get<WalletData>(
+          `https://wallet-service-f3wa.onrender.com/wallet/${walletId}`
+        )
         .then((res) => setWallet(res.data));
     }
   }, []);
