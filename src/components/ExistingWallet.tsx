@@ -7,8 +7,6 @@ import {
   Card,
   CardContent,
   Grid,
-  MenuItem,
-  SelectChangeEvent,
   TextField,
   Typography,
 } from "@mui/material";
@@ -57,7 +55,7 @@ const ExistingWallet = () => {
       display="flex"
       flexDirection="column"
       alignItems="center"
-      height="100vh"
+      height="76vh"
       padding="20px"
     >
       <Typography variant="h4" gutterBottom>
@@ -74,7 +72,13 @@ const ExistingWallet = () => {
         }}
         style={{ maxWidth: "400px", width: "100%" }}
       />
-      <Grid container spacing={2} justifyContent="center" mt={2}>
+      <Grid
+        container
+        spacing={2}
+        justifyContent="center"
+        mt={2}
+        sx={{ overflowY: "scroll", height: "400px", width: "1200px" }}
+      >
         {filteredWallets.map((wallet) => (
           <Grid item key={wallet._id}>
             <Card

@@ -103,7 +103,7 @@ const Wallet = () => {
         display="flex"
         flexDirection="column"
         alignItems="center"
-        height="100vh"
+        height="82vh"
         justifyContent="center"
       >
         <Card

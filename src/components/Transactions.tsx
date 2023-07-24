@@ -49,11 +49,24 @@ const Transactions = () => {
     }
   }, []);
 
+  // Convert the filterValue to a Date object for date filtering
+  const parsedDateFilterValue = useMemo(() => {
+    if (filterValue && filterType === "date") {
+      const dateValue = new Date(filterValue);
+      return isNaN(dateValue.getTime()) ? null : dateValue;
+    }
+    return null;
+  }, [filterValue, filterType]);
+
   // Filter transactions based on selected filter type and value
   const filteredTransactions = useMemo(() => {
     if (filterType === "date") {
-      return filterValue
-        ? transactions.filter((transaction) => transaction.date === filterValue)
+      return parsedDateFilterValue
+        ? transactions.filter(
+            (transaction) =>
+              new Date(transaction.date).toDateString() ===
+              parsedDateFilterValue.toDateString()
+          )
         : transactions;
     } else if (filterType === "amount") {
       const amountValue = parseFloat(filterValue as string);
@@ -65,7 +78,7 @@ const Transactions = () => {
     } else {
       return transactions;
     }
-  }, [transactions, filterType, filterValue]);
+  }, [transactions, filterType, parsedDateFilterValue, filterValue]);
 
   const columns = useMemo(
     () => [
@@ -145,7 +158,10 @@ const Transactions = () => {
         }}
       >
         {/* Filter Dropdown */}
-        <FormControl sx={{ minWidth: 120, marginBottom: "10px" }}>
+        <FormControl
+          variant="outlined"
+          sx={{ minWidth: 200, marginBottom: "10px" }} // Increased the width
+        >
           <Select value={filterType} onChange={handleFilterTypeChange}>
             <MenuItem value="date">Filter by Date</MenuItem>
             <MenuItem value="amount">Filter by Amount</MenuItem>
@@ -157,6 +173,7 @@ const Transactions = () => {
             value={filterValue as string}
             onChange={handleFilterValueChange}
             placeholder="Enter amount..."
+            style={{ height: "50px", marginLeft: "10px" }} // Adjusted the height and margin
           />
         )}
         {filterType === "date" && (
@@ -164,6 +181,7 @@ const Transactions = () => {
             type="date"
             value={filterValue as string}
             onChange={handleFilterValueChange}
+            style={{ height: "50px", marginLeft: "10px" }} // Adjusted the height and margin
           />
         )}
 
