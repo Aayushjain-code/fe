@@ -14,6 +14,10 @@ import {
   TableRow,
   TableSortLabel,
   TablePagination,
+  Link,
+  FormControl,
+  Select,
+  MenuItem,
 } from "@mui/material";
 
 interface Transaction {
@@ -28,6 +32,8 @@ const Transactions = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [filterType, setFilterType] = useState<"date" | "amount">("date");
+  const [filterValue, setFilterValue] = useState<string | number>("");
 
   useEffect(() => {
     const walletId = localStorage.getItem("walletId");
@@ -42,12 +48,30 @@ const Transactions = () => {
         });
     }
   }, []);
-  // console.log(transactions);
+
+  // Filter transactions based on selected filter type and value
+  const filteredTransactions = useMemo(() => {
+    if (filterType === "date") {
+      return filterValue
+        ? transactions.filter((transaction) => transaction.date === filterValue)
+        : transactions;
+    } else if (filterType === "amount") {
+      const amountValue = parseFloat(filterValue as string);
+      return filterValue
+        ? transactions.filter(
+            (transaction) => transaction.amount === amountValue
+          )
+        : transactions;
+    } else {
+      return transactions;
+    }
+  }, [transactions, filterType, filterValue]);
+
   const columns = useMemo(
     () => [
       {
         Header: "ID",
-        accessor: "id",
+        accessor: "_id",
       },
       {
         Header: "Amount",
@@ -80,7 +104,7 @@ const Transactions = () => {
     nextPage,
     previousPage,
   } = useTable<Transaction>(
-    { columns, data: transactions },
+    { columns, data: filteredTransactions },
     useSortBy,
     usePagination
   );
@@ -97,11 +121,55 @@ const Transactions = () => {
     setPage(0);
   };
 
+  const handleFilterTypeChange = (
+    event: React.ChangeEvent<{ value: unknown }>
+  ) => {
+    setFilterType(event.target.value as "date" | "amount");
+    setFilterValue("");
+  };
+
+  const handleFilterValueChange = (
+    event: React.ChangeEvent<{ value: unknown }>
+  ) => {
+    setFilterValue(event.target.value as string | number);
+  };
+
   return (
-    <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", overflow: "hidden" }}>
-        <TableContainer>
+    <Box sx={{ width: "100%", margin: "20px", overflowX: "hidden" }}>
+      <Paper
+        sx={{
+          width: "90%",
+          overflow: "hidden",
+          margin: "20px",
+          padding: "20px",
+        }}
+      >
+        {/* Filter Dropdown */}
+        <FormControl sx={{ minWidth: 120, marginBottom: "10px" }}>
+          <Select value={filterType} onChange={handleFilterTypeChange}>
+            <MenuItem value="date">Filter by Date</MenuItem>
+            <MenuItem value="amount">Filter by Amount</MenuItem>
+          </Select>
+        </FormControl>
+        {filterType === "amount" && (
+          <input
+            type="number"
+            value={filterValue as string}
+            onChange={handleFilterValueChange}
+            placeholder="Enter amount..."
+          />
+        )}
+        {filterType === "date" && (
+          <input
+            type="date"
+            value={filterValue as string}
+            onChange={handleFilterValueChange}
+          />
+        )}
+
+        <TableContainer sx={{ maxWidth: "100%", overflowX: "hidden" }}>
           <Table stickyHeader {...getTableProps()}>
+            {/* Table Header */}
             <TableHead>
               {headerGroups.map((headerGroup) => (
                 <TableRow {...headerGroup.getHeaderGroupProps()}>
@@ -115,6 +183,11 @@ const Transactions = () => {
                             : "asc"
                           : false
                       }
+                      sx={{
+                        fontWeight: "bold",
+                        borderBottom: "1px solid black",
+                        padding: "12px",
+                      }}
                     >
                       {column.render("Header")}
                       {column.isSorted
@@ -127,6 +200,7 @@ const Transactions = () => {
                 </TableRow>
               ))}
             </TableHead>
+            {/* Table Body */}
             <TableBody {...getTableBodyProps()}>
               {tablePage.map((row) => {
                 prepareRow(row);
@@ -134,8 +208,16 @@ const Transactions = () => {
                   <TableRow {...row.getRowProps()}>
                     {row.cells.map((cell) => {
                       return (
-                        <TableCell {...cell.getCellProps()}>
-                          {cell.render("Cell")}
+                        <TableCell
+                          {...cell.getCellProps()}
+                          sx={{
+                            padding: "12px",
+                            borderBottom: "1px solid rgba(0, 0, 0, 0.1)",
+                          }}
+                        >
+                          {cell.column.id === "date"
+                            ? new Date(cell.value).toLocaleDateString()
+                            : cell.render("Cell")}
                         </TableCell>
                       );
                     })}
@@ -145,17 +227,42 @@ const Transactions = () => {
             </TableBody>
           </Table>
         </TableContainer>
+        {/* Table Pagination */}
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
           component="div"
-          count={transactions.length}
+          count={filteredTransactions.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          sx={{ padding: "20px" }}
         />
-        <CSVLink data={transactions} filename={"wallet_transactions.csv"}>
-          Export CSV
+        {/* CSV Export */}
+        <CSVLink
+          data={filteredTransactions}
+          filename={"wallet_transactions.csv"}
+          style={{ textDecoration: "none" }}
+        >
+          <Link
+            variant="button"
+            color="primary"
+            underline="none"
+            sx={{
+              display: "inline-block",
+              backgroundColor: "#1976d2",
+              color: "white",
+              padding: "10px 20px",
+              borderRadius: "5px",
+              marginTop: "10px",
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "#135ba1",
+              },
+            }}
+          >
+            Export CSV
+          </Link>
         </CSVLink>
       </Paper>
     </Box>

@@ -1,16 +1,19 @@
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useSnackbar } from "notistack";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import {
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
+  Box,
+  Card,
+  CardContent,
+  Container,
+  Grid,
   SelectChangeEvent,
+  Typography,
 } from "@mui/material";
 
 interface WalletData {
@@ -28,6 +31,7 @@ const Wallet = () => {
   const [amount, setAmount] = useState("");
   const [transactionType, setTransactionType] = useState("CREDIT");
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     // Fetch all wallets
@@ -50,15 +54,20 @@ const Wallet = () => {
     window.location.reload();
   };
 
-  const createWallet = async (e: FormEvent) => {
+  const createWallet = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await axios.post<WalletData>("http://localhost:3000/setup", {
-      balance,
-      name,
-    });
-    console.log(res);
-    localStorage.setItem("walletId", res?.data?._id);
-    setWallet(res.data);
+    try {
+      const res = await axios.post<WalletData>("http://localhost:3000/setup", {
+        balance,
+        name,
+      });
+      console.log(res);
+      localStorage.setItem("walletId", res?.data?._id);
+      setWallet(res.data);
+      enqueueSnackbar("Wallet is created!", { variant: "success" });
+    } catch (error) {
+      console.error("Error creating wallet:", error);
+    }
   };
 
   const makeTransaction = async (e: FormEvent) => {
@@ -74,6 +83,10 @@ const Wallet = () => {
       `http://localhost:3000/wallet/${walletId}`
     );
     setWallet(res.data);
+    enqueueSnackbar(
+      transactionType === "CREDIT" ? "Amount Credited!" : "Amount Debited",
+      { variant: transactionType === "CREDIT" ? "success" : "error" }
+    );
   };
 
   const goToTransactions = () => {
@@ -81,79 +94,109 @@ const Wallet = () => {
   };
   const ClearLocalStorage = () => {
     localStorage.clear();
+    navigate("/");
     window.location.reload();
   };
   return (
-    <div>
-      <button onClick={ClearLocalStorage}>Clear</button>
-      {!wallet ? (
-        <form onSubmit={createWallet}>
-          <TextField
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            label="Wallet Name"
-            variant="outlined"
-          />
-          <TextField
-            value={balance}
-            onChange={(e) => setBalance(e.target.value)}
-            label="Initial Balance"
-            variant="outlined"
-          />
-          <Button type="submit" variant="contained">
-            Create Wallet
-          </Button>
-        </form>
-      ) : (
-        <div>
-          <h2>{wallet.name}</h2>
-          <h3>Balance: {wallet.balance?.toFixed(4)}</h3>
-          <form onSubmit={makeTransaction}>
-            <TextField
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              label="Transaction Amount"
-              variant="outlined"
-            />
-            <ToggleButtonGroup
-              value={transactionType}
-              exclusive
-              onChange={(e: ChangeEvent<{}>, newAlignment: string) => {
-                setTransactionType(newAlignment);
-              }}
-            >
-              <ToggleButton value="CREDIT">Credit</ToggleButton>
-              <ToggleButton value="DEBIT">Debit</ToggleButton>
-            </ToggleButtonGroup>
-            <Button type="submit" variant="contained">
-              Execute Transaction
-            </Button>
-          </form>
-          <Button onClick={goToTransactions} variant="contained">
-            View Transactions
-          </Button>
-        </div>
-      )}
-
-      <div style={{ width: "50%" }}>
-        <FormControl variant="outlined" fullWidth>
-          <InputLabel id="wallet-select-label">Select Wallet</InputLabel>
-          <Select
-            labelId="wallet-select-label"
-            id="wallet-select"
-            value={selectedWallet}
-            onChange={handleWalletChange}
-            label="Select Wallet"
-          >
-            {wallets.map((wallet) => (
-              <MenuItem key={wallet._id} value={wallet._id}>
-                {wallet.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-    </div>
+    <Container maxWidth="sm">
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        height="100vh"
+        justifyContent="center"
+      >
+        <Card
+          variant="outlined"
+          sx={{ padding: "20px", boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.1)" }}
+        >
+          <CardContent>
+            <Box display="flex" justifyContent="flex-end">
+              <Button onClick={ClearLocalStorage} variant="outlined">
+                Clear
+              </Button>
+            </Box>
+            {!wallet ? (
+              <form onSubmit={createWallet}>
+                <Typography
+                  variant="h5"
+                  component="div"
+                  align="center"
+                  gutterBottom
+                >
+                  Wallet Options
+                </Typography>
+                <Grid container spacing={2} justifyContent="center" mt={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      label="Wallet Name"
+                      variant="outlined"
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      value={balance}
+                      onChange={(e) => setBalance(e.target.value)}
+                      label="Initial Balance"
+                      variant="outlined"
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button type="submit" variant="contained" fullWidth>
+                      Create Wallet
+                    </Button>
+                  </Grid>
+                </Grid>
+              </form>
+            ) : (
+              <div>
+                <Typography variant="h5" gutterBottom>
+                  {wallet.name}
+                </Typography>
+                <Typography variant="h6" gutterBottom>
+                  Balance: {wallet.balance?.toFixed(4)}
+                </Typography>
+                <form onSubmit={makeTransaction}>
+                  <TextField
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    label="Transaction Amount"
+                    variant="outlined"
+                    fullWidth
+                  />
+                  <ToggleButtonGroup
+                    value={transactionType}
+                    exclusive
+                    onChange={(e: ChangeEvent<{}>, newAlignment: string) => {
+                      setTransactionType(newAlignment);
+                    }}
+                    sx={{ marginY: 2 }}
+                  >
+                    <ToggleButton value="CREDIT">Credit</ToggleButton>
+                    <ToggleButton value="DEBIT">Debit</ToggleButton>
+                  </ToggleButtonGroup>
+                  <Button type="submit" variant="contained" fullWidth>
+                    Execute Transaction
+                  </Button>
+                  <Button
+                    onClick={goToTransactions}
+                    variant="contained"
+                    fullWidth
+                    sx={{ marginY: 2 }}
+                  >
+                    View Transactions
+                  </Button>
+                </form>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
+    </Container>
   );
 };
 
