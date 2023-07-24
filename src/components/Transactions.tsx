@@ -40,7 +40,7 @@ const Transactions = () => {
     if (walletId) {
       axios
         .get<Transaction[]>(
-          `https://wallet-service-f3wa.onrender.com/transactions?walletId=${walletId}`
+          `https://wallet-123.onrender.com//transactions?walletId=${walletId}`
         )
         .then((res) => {
           console.log(res);

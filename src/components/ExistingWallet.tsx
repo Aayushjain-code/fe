@@ -28,7 +28,7 @@ const ExistingWallet = () => {
   useEffect(() => {
     // Fetch all wallets
     axios
-      .get<WalletData[]>("https://wallet-service-f3wa.onrender.com/wallets")
+      .get<WalletData[]>("https://wallet-123.onrender.com//wallets")
       .then((res) => {
         setWallets(res.data);
       });
@@ -36,9 +36,7 @@ const ExistingWallet = () => {
     const walletId = localStorage.getItem("walletId");
     if (walletId) {
       axios
-        .get<WalletData>(
-          `https://wallet-service-f3wa.onrender.com/wallet/${walletId}`
-        )
+        .get<WalletData>(`https://wallet-123.onrender.com//wallet/${walletId}`)
         .then((res) => setWallet(res.data));
     }
   }, []);

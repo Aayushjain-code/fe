@@ -36,15 +36,13 @@ const Wallet = () => {
   useEffect(() => {
     // Fetch all wallets
     axios
-      .get<WalletData[]>("https://wallet-service-f3wa.onrender.com/wallets")
+      .get<WalletData[]>("https://wallet-123.onrender.com//wallets")
       .then((res) => setWallets(res.data));
 
     const walletId = localStorage.getItem("walletId");
     if (walletId) {
       axios
-        .get<WalletData>(
-          `https://wallet-service-f3wa.onrender.com/wallet/${walletId}`
-        )
+        .get<WalletData>(`https://wallet-123.onrender.com//wallet/${walletId}`)
         .then((res) => setWallet(res.data));
     }
   }, []);
@@ -60,7 +58,7 @@ const Wallet = () => {
     e.preventDefault();
     try {
       const res = await axios.post<WalletData>(
-        "https://wallet-service-f3wa.onrender.com/setup",
+        "https://wallet-123.onrender.com//setup",
         {
           balance,
           name,
@@ -80,15 +78,12 @@ const Wallet = () => {
     const walletId = localStorage.getItem("walletId");
     const transactionAmount =
       transactionType === "CREDIT" ? parseFloat(amount) : -parseFloat(amount);
-    await axios.post(
-      `https://wallet-service-f3wa.onrender.com/transact/${walletId}`,
-      {
-        amount: transactionAmount,
-        description: transactionType,
-      }
-    );
+    await axios.post(`https://wallet-123.onrender.com//transact/${walletId}`, {
+      amount: transactionAmount,
+      description: transactionType,
+    });
     const res = await axios.get<WalletData>(
-      `https://wallet-service-f3wa.onrender.com/wallet/${walletId}`
+      `https://wallet-123.onrender.com//wallet/${walletId}`
     );
     setWallet(res.data);
     enqueueSnackbar(
