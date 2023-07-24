@@ -47,6 +47,7 @@ const Wallet = () => {
     const walletId = event.target.value as string;
     setSelectedWallet(walletId);
     localStorage.setItem("walletId", walletId);
+    window.location.reload();
   };
 
   const createWallet = async (e: FormEvent) => {
@@ -78,9 +79,13 @@ const Wallet = () => {
   const goToTransactions = () => {
     navigate("/transactions");
   };
-
+  const ClearLocalStorage = () => {
+    localStorage.clear();
+    window.location.reload();
+  };
   return (
     <div>
+      <button onClick={ClearLocalStorage}>Clear</button>
       {!wallet ? (
         <form onSubmit={createWallet}>
           <TextField
@@ -130,22 +135,24 @@ const Wallet = () => {
         </div>
       )}
 
-      <FormControl variant="outlined">
-        <InputLabel id="wallet-select-label">Select Wallet</InputLabel>
-        <Select
-          labelId="wallet-select-label"
-          id="wallet-select"
-          value={selectedWallet}
-          onChange={handleWalletChange}
-          label="Select Wallet"
-        >
-          {wallets.map((wallet) => (
-            <MenuItem key={wallet._id} value={wallet._id}>
-              {wallet.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <div style={{ width: "50%" }}>
+        <FormControl variant="outlined" fullWidth>
+          <InputLabel id="wallet-select-label">Select Wallet</InputLabel>
+          <Select
+            labelId="wallet-select-label"
+            id="wallet-select"
+            value={selectedWallet}
+            onChange={handleWalletChange}
+            label="Select Wallet"
+          >
+            {wallets.map((wallet) => (
+              <MenuItem key={wallet._id} value={wallet._id}>
+                {wallet.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
     </div>
   );
 };
